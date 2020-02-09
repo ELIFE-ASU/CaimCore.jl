@@ -3,6 +3,11 @@ uuid = "c71dafce-fee3-43f0-bdeb-12d43a667b0e"
 authors = ["Douglas G. Moore <doug@dglmoore.com>"]
 version = "0.1.0"
 
+[deps]
+BSON = "fbb218c0-5317-5bc6-957e-2ee96dd4b1f0"
+Parameters = "d96e819e-fc66-5662-9728-84c9c7592b0a"
+Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
+
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 

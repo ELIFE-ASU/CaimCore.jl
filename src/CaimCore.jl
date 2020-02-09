@@ -1,5 +1,8 @@
 module CaimCore
 
-greet() = "Hello World!"
+export SessionStorage, Session
+export save, load
+
+include("session.jl")
 
 end
