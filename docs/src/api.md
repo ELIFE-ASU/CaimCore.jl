@@ -18,6 +18,21 @@ analysis, and providing persistent storage.
 ```@docs
 Session
 SessionStorage
-save
-load
+save(::AbstractString, ::Session)
+load(::Type{Session}, ::AbstractString)
+```
+
+## Datasets
+
+```@docs
+Dataset
+VideoGraphicDataset
+```
+
+### Image Stacks
+
+```@docs
+ImageStack
+load(::Type{ImageStack}, ::AbstractString)
+load(::Type{ImageStack}, ::AbstractArray{<:AbstractString,1})
 ```
