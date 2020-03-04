@@ -3,9 +3,9 @@ module CaimCore
 using FileIO, Images
 
 export Dataset
-export VideoGraphicDataset, ImageStack
+export VideoGraphicDataset, ImageStack, frames
 export SessionStorage, Session
-export save, load
+export save, load, dataset!
 
 include("util.jl")
 include("dataset.jl")

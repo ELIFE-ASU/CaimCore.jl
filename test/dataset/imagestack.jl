@@ -21,26 +21,26 @@ using Colors, FixedPointNumbers
 
         let stack = load(ImageStack, joinpath(@__DIR__, "data", "png"))
             @test size(stack) == size(frames)
-            @test stack.frames == frames
+            @test CaimCore.frames(stack) == frames
             @test string(stack) == "ImageStack{RGB{Normed{UInt8,8}}}\n  size: 20×20×5"
         end
 
         let stack = load(ImageStack, joinpath(@__DIR__, "data", "tiff"))
             @test size(stack) == size(frames)
-            @test stack.frames == frames
+            @test CaimCore.frames(stack) == frames
             @test string(stack) == "ImageStack{RGB{Normed{UInt8,8}}}\n  size: 20×20×5"
         end
 
         let stack = load(ImageStack, joinpath(@__DIR__, "data", "withdots"))
             @test size(stack) == size(frames)
-            @test stack.frames == frames
+            @test CaimCore.frames(stack) == frames
             @test string(stack) == "ImageStack{RGB{Normed{UInt8,8}}}\n  size: 20×20×5"
         end
 
         let stack = load(ImageStack, joinpath(@__DIR__, "data", "withdots"), ".tiff";
                          ignoredots=false)
             @test size(stack) == size(frames)
-            @test stack.frames == frames
+            @test CaimCore.frames(stack) == frames
             @test string(stack) == "ImageStack{RGB{Normed{UInt8,8}}}\n  size: 20×20×5"
         end
     end
@@ -52,7 +52,7 @@ using Colors, FixedPointNumbers
 
         stack = load(ImageStack, joinpath(@__DIR__, "data", "fmtmix"), ".png")
         @test size(stack) == size(frames)
-        @test stack.frames == frames
+        @test CaimCore.frames(stack) == frames
         @test string(stack) == "ImageStack{RGB{Normed{UInt8,8}}}\n  size: 20×20×2"
     end
 
@@ -62,7 +62,7 @@ using Colors, FixedPointNumbers
 
         stack = load(ImageStack, joinpath(@__DIR__, "data", "grayscale"))
         @test size(stack) == size(frames)
-        @test stack.frames == frames
+        @test CaimCore.frames(stack) == frames
         @test string(stack) == "ImageStack{Gray{Normed{UInt8,8}}}\n  size: 20×20×5"
     end
 end

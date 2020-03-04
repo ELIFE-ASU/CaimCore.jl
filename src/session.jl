@@ -29,7 +29,9 @@ SessionStorage(v"0.1.0")
 """
 mutable struct SessionStorage
     version::VersionNumber
+    datasets::Vector{Dataset}
 end
+SessionStorage(v::VersionNumber) = SessionStorage(v, Dataset[])
 SessionStorage() = SessionStorage(version())
 
 """
@@ -60,4 +62,23 @@ Load a [`Session`](@ref) from disc.
 function load(::Type{Session}, filename::AbstractString)
     @unpack storage = BSON.load(filename)
     Session(filename, storage)
+end
+
+"""
+    dataset!(session, dataset)
+
+Add a dataset to the session, returning the session.
+"""
+function dataset!(session::Session, dataset::Dataset)
+    push!(session.storage.datasets, dataset)
+    session
+end
+
+"""
+    dataset!(session, T, args...; kwargs...)
+
+Load a dataset and add it to the session, returning the session.
+"""
+function dataset!(session::Session, T::Type{<:Dataset}, args...; kwargs...)
+    dataset!(session, load(T, args...; kwargs...))
 end

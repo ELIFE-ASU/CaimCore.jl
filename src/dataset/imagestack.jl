@@ -21,7 +21,8 @@ function Base.show(io::IO, stack::ImageStack)
     print(io, "  size: ", join(string.(size(stack)), "×"))
 end
 
-Base.size(stack::ImageStack) = size(stack.frames)
+frames(stack::ImageStack) = stack.frames
+Base.size(stack::ImageStack) = size(frames(stack))
 
 """
     load(::Type{ImageStack}, dir[, ext]; ignoredots=true)
@@ -131,3 +132,5 @@ function loadframes(files::AbstractVector{<:AbstractString})
         end
     end
 end
+
+Base.:(==)(a::ImageStack, b::ImageStack) = frames(a) == frames(b)
