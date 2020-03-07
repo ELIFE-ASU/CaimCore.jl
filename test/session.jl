@@ -3,19 +3,19 @@
     mkpath(SESSION_DIR)
 
     try
-        let s = Session(SessionStorage(v"1.2.3"))
-            @test s.storage.version == v"1.2.3"
-            @test s.storage.datasets == Dataset[]
+        let s = Session(v"1.2.3")
+            @test s.version == v"1.2.3"
+            @test s.datasets == Dataset[]
         end
 
         let path = joinpath(SESSION_DIR, tempname())
-            s = Session(SessionStorage(v"1.2.3"))
+            s = Session(v"1.2.3")
             save(path, s)
 
             try
                 t = load(Session, path)
-                @test t.storage.version == v"1.2.3"
-                @test s.storage.datasets == Dataset[]
+                @test t.version == v"1.2.3"
+                @test s.datasets == Dataset[]
             finally
                 rm(path; force=true)
             end
@@ -27,8 +27,8 @@
 
             try
                 t = load(Session, path)
-                @test t.storage.version == v"0.1.0"
-                @test t.storage.datasets == Dataset[]
+                @test t.version == v"0.1.0"
+                @test t.datasets == Dataset[]
             finally
                 rm(path; force=true)
             end
@@ -40,7 +40,7 @@
             s = Session()
             t = dataset!(s, stack)
             @test s === t
-            @test s.storage.datasets == [stack]
+            @test s.datasets == [stack]
         end
 
         let path = joinpath(@__DIR__, "dataset", "data", "tiff")
@@ -49,7 +49,7 @@
             s = Session()
             t = dataset!(s, ImageStack, path)
             @test s === t
-            @test s.storage.datasets == [stack]
+            @test s.datasets == [stack]
         end
 
         let path = joinpath(SESSION_DIR, tempname())
@@ -62,7 +62,7 @@
 
             try
                 t = load(Session, path)
-                @test t.storage.datasets == s.storage.datasets
+                @test t.datasets == s.datasets
             finally
                 rm(path; force=true)
             end

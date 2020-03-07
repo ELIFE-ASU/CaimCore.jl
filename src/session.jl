@@ -17,32 +17,16 @@ function version()
 end
 
 """
-    SessionStorage([version])
-
-Persistent storage component of a CaimCore [`Session`](@ref). This data will be
-saved and read from disk via calls to [`save`](@ref) and [`load`](@ref).
-
-```jldoctest
-julia> SessionStorage()
-SessionStorage(v"0.1.0")
-```
-"""
-mutable struct SessionStorage
-    version::VersionNumber
-    datasets::Vector{Dataset}
-end
-SessionStorage(v::VersionNumber) = SessionStorage(v, Dataset[])
-SessionStorage() = SessionStorage(version())
-
-"""
     Session()
 
 A structure for storing session information for a CaimCore analysis.
 """
 mutable struct Session
-    storage::SessionStorage
+    version::VersionNumber
+    datasets::Vector{Dataset}
 end
-Session() = Session(SessionStorage())
+Session() = Session(version())
+Session(v::VersionNumber) = Session(v, Dataset[])
 
 """
     save(filename, session)
@@ -50,7 +34,7 @@ Session() = Session(SessionStorage())
 Save the persistent component of a [`Session`](@ref) to a file.
 """
 function save(filename::AbstractString, session::Session)
-    bson(filename, Dict(:storage => session.storage))
+    bson(filename, Dict(:session => session))
 end
 
 """
@@ -59,8 +43,8 @@ end
 Load a [`Session`](@ref) from disc.
 """
 function load(::Type{Session}, filename::AbstractString)
-    @unpack storage = BSON.load(filename)
-    Session(storage)
+    @unpack session = BSON.load(filename)
+    return session
 end
 
 """
@@ -69,7 +53,7 @@ end
 Add a dataset to the session, returning the session.
 """
 function dataset!(session::Session, dataset::Dataset)
-    push!(session.storage.datasets, dataset)
+    push!(session.datasets, dataset)
     session
 end
 
