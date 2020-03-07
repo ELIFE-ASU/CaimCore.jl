@@ -35,23 +35,22 @@ SessionStorage(v::VersionNumber) = SessionStorage(v, Dataset[])
 SessionStorage() = SessionStorage(version())
 
 """
-    Session(path[, storage])
+    Session()
 
 A structure for storing session information for a CaimCore analysis.
 """
 mutable struct Session
-    path::AbstractString
     storage::SessionStorage
 end
-Session(filename::AbstractString) = Session(filename, SessionStorage())
+Session() = Session(SessionStorage())
 
 """
     save(filename, session)
 
-Save the persistent component of a [`Session`](@ref) to a disc.
+Save the persistent component of a [`Session`](@ref) to a file.
 """
 function save(filename::AbstractString, session::Session)
-    bson(session.path, Dict(:storage => session.storage))
+    bson(filename, Dict(:storage => session.storage))
 end
 
 """
@@ -61,7 +60,7 @@ Load a [`Session`](@ref) from disc.
 """
 function load(::Type{Session}, filename::AbstractString)
     @unpack storage = BSON.load(filename)
-    Session(filename, storage)
+    Session(storage)
 end
 
 """
