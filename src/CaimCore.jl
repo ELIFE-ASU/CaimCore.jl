@@ -1,6 +1,6 @@
 module CaimCore
 
-using FileIO, Images
+using Defer, FileIO, Images, VideoIO
 
 export Dataset
 export VideoGraphicDataset, ImageStack, frames

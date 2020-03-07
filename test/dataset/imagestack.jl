@@ -1,21 +1,28 @@
 using Colors, FixedPointNumbers
 
 const STACKS_DIR = joinpath(@__DIR__, "data", "stacks")
+const VIDEOS_DIR = joinpath(@__DIR__, "data", "videos")
 
-@testset "Loading ImageStack" begin
+@testset "Loading ImageStack Fails" begin
     @test_throws ErrorException load(ImageStack, joinpath(STACKS_DIR, "colormix"))
     @test_throws ErrorException load(ImageStack, joinpath(STACKS_DIR, "sizemix"))
     @test_throws ErrorException load(ImageStack, joinpath(STACKS_DIR, "unknown"))
     @test_throws ErrorException load(ImageStack, joinpath(STACKS_DIR, "unloadable"))
     @test_throws ErrorException load(ImageStack, joinpath(STACKS_DIR, "nonimage"))
     @test_throws ErrorException load(ImageStack, joinpath(STACKS_DIR, "fmtmix"))
-    @test_throws ErrorException load(ImageStack, joinpath(STACKS_DIR, "fmtmix"), ".jpg")
+    @test_throws ErrorException load(ImageStack, joinpath(STACKS_DIR, "fmtmix"); ext=".jpg")
 
     @test_throws ErrorException load(ImageStack, joinpath(STACKS_DIR, "withdots");
                                      ignoredots=false)
 
     @test_throws ErrorException load(ImageStack, String[])
 
+    @test_throws ErrorException load(ImageStack, joinpath(VIDEOS_DIR, "empty.avi"))
+    @test_throws ErrorException load(ImageStack, joinpath(VIDEOS_DIR, "garbage.avi"))
+    @test_throws ErrorException load(ImageStack, joinpath(VIDEOS_DIR, "nonvideo.txt"))
+end
+
+@testset "Loading ImageStack from a Directory" begin
     let baseframe = repeat([RGB{N0f8}(1., 0., 0.) RGB{N0f8}(0., 1., 0.);
                             RGB{N0f8}(0., 0., 0.) RGB{N0f8}(0., 0., 1)];
                            inner=(10,10))
@@ -39,7 +46,7 @@ const STACKS_DIR = joinpath(@__DIR__, "data", "stacks")
             @test string(stack) == "ImageStack{RGB{Normed{UInt8,8}}}\n  size: 20×20×5"
         end
 
-        let stack = load(ImageStack, joinpath(STACKS_DIR, "withdots"), ".tiff";
+        let stack = load(ImageStack, joinpath(STACKS_DIR, "withdots"); ext=".tiff",
                          ignoredots=false)
             @test size(stack) == size(frames)
             @test CaimCore.frames(stack) == frames
@@ -52,7 +59,7 @@ const STACKS_DIR = joinpath(@__DIR__, "data", "stacks")
                            inner=(10,10))
         frames = cat(CaimCore.scanl(rot180, baseframe, 1)...; dims=3)
 
-        stack = load(ImageStack, joinpath(STACKS_DIR, "fmtmix"), ".png")
+        stack = load(ImageStack, joinpath(STACKS_DIR, "fmtmix"); ext=".png")
         @test size(stack) == size(frames)
         @test CaimCore.frames(stack) == frames
         @test string(stack) == "ImageStack{RGB{Normed{UInt8,8}}}\n  size: 20×20×2"
@@ -66,5 +73,72 @@ const STACKS_DIR = joinpath(@__DIR__, "data", "stacks")
         @test size(stack) == size(frames)
         @test CaimCore.frames(stack) == frames
         @test string(stack) == "ImageStack{Gray{Normed{UInt8,8}}}\n  size: 20×20×5"
+    end
+end
+
+@testset "Loading ImageStack from Video File" begin
+    let baseframe = repeat([RGB{N0f8}(1., 0., 0.) RGB{N0f8}(0., 1., 0.);
+                            RGB{N0f8}(0., 0., 0.) RGB{N0f8}(0., 0., 1)];
+                           inner=(10,10))
+        frames = cat(CaimCore.scanl(rotr90, baseframe, 4)...; dims=3)
+
+        let stack = load(ImageStack, joinpath(VIDEOS_DIR, "png.avi"))
+            @test size(stack) == size(frames)
+            #  @test CaimCore.frames(stack) == frames
+            @test string(stack) == "ImageStack{RGB{Normed{UInt8,8}}}\n  size: 20×20×5"
+        end
+
+        let stack = load(ImageStack, joinpath(VIDEOS_DIR, "png.mov"))
+            @test size(stack) == size(frames)
+            #  @test CaimCore.frames(stack) == frames
+            @test string(stack) == "ImageStack{RGB{Normed{UInt8,8}}}\n  size: 20×20×5"
+        end
+
+        let stack = load(ImageStack, joinpath(VIDEOS_DIR, "png.mp4"))
+            @test size(stack) == size(frames)
+            #  @test CaimCore.frames(stack) == frames
+            @test string(stack) == "ImageStack{RGB{Normed{UInt8,8}}}\n  size: 20×20×5"
+        end
+
+        let stack = load(ImageStack, joinpath(VIDEOS_DIR, "tiff.avi"))
+            @test size(stack) == size(frames)
+            #  @test CaimCore.frames(stack) == frames
+            @test string(stack) == "ImageStack{RGB{Normed{UInt8,8}}}\n  size: 20×20×5"
+        end
+
+        let stack = load(ImageStack, joinpath(VIDEOS_DIR, "tiff.mov"))
+            @test size(stack) == size(frames)
+            #  @test CaimCore.frames(stack) == frames
+            @test string(stack) == "ImageStack{RGB{Normed{UInt8,8}}}\n  size: 20×20×5"
+        end
+
+        let stack = load(ImageStack, joinpath(VIDEOS_DIR, "tiff.mp4"))
+            @test size(stack) == size(frames)
+            #  @test CaimCore.frames(stack) == frames
+            @test string(stack) == "ImageStack{RGB{Normed{UInt8,8}}}\n  size: 20×20×5"
+        end
+    end
+
+    let baseframe = repeat([Gray{N0f8}(0.) Gray{N0f8}(0.33); Gray{N0f8}(1.) Gray{N0f8}(0.66)];
+                           inner=(10,10))
+        frames = cat(CaimCore.scanl(rotr90, baseframe, 4)...; dims=3)
+
+        let stack = load(ImageStack, joinpath(VIDEOS_DIR, "grayscale.avi"))
+            @test size(stack) == size(frames)
+            #  @test CaimCore.frames(stack) == frames
+            @test string(stack) == "ImageStack{RGB{Normed{UInt8,8}}}\n  size: 20×20×5"
+        end
+
+        let stack = load(ImageStack, joinpath(VIDEOS_DIR, "grayscale.mov"))
+            @test size(stack) == size(frames)
+            #  @test CaimCore.frames(stack) == frames
+            @test string(stack) == "ImageStack{RGB{Normed{UInt8,8}}}\n  size: 20×20×5"
+        end
+
+        let stack = load(ImageStack, joinpath(VIDEOS_DIR, "grayscale.mp4"))
+            @test size(stack) == size(frames)
+            #  @test CaimCore.frames(stack) == frames
+            @test string(stack) == "ImageStack{RGB{Normed{UInt8,8}}}\n  size: 20×20×5"
+        end
     end
 end

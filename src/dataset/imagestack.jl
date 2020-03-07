@@ -1,4 +1,15 @@
 """
+    VIDEO_EXTS
+
+Supported video extensions.
+"""
+const VIDEO_EXTS = begin
+    raw = split.(VideoIO.FFMPEG.exe("-formats", collect=true)[5:end], " ")
+    fields = filter.(!isempty, raw)
+    map(f -> f[2], fields)
+end
+
+"""
     ImageStack <: VideoGraphicDataset
     ImageStack(frames::Array{C,3}) where {C <: Colorant}
     ImageStack(frames::AbstractVector{Matrix{C}} where {C <: Colorant}
@@ -25,15 +36,22 @@ frames(stack::ImageStack) = stack.frames
 Base.size(stack::ImageStack) = size(frames(stack))
 
 """
-    load(::Type{ImageStack}, dir[, ext]; ignoredots=true)
+    load(::Type{ImageStack}, path; ext=nothing, ignoredots=true)
 
-Load all image files from a directory into an `ImageStack`. If provided, only
-files with extention `ext` will be loaded. Files whose name begins with a `.`
-will be ignored if `ignoredots` is `true`.
+Load all frames from a video or image files from a directory into an
+`ImageStack`.  If a directory is provided, only files with extention `ext` will
+be loaded. If `isnothing(ext)`, all files will be load. Files whose name begins
+with a `.` will be ignored if `ignoredots` is `true`.
 
-The files are sorted lexicographically before being loaded. The files must all
-have the same size, file extention and color space, e.g. `RGB{N0f8}`,
-`Gray{N0f8}`, etc..
+When loading from image files, the filenames are sorted lexicographically. The
+files must all have the same size, file extention and color space, e.g.
+`RGB{N0f8}`, `Gray{N0f8}`, etc..
+
+```julia
+julia> load(ImageStack, "fromtiffs.avi")
+ImageStack{ColorTypes.RGB{FixedPointNumbers.Normed{UInt8,8}}}
+  size: 20×20×5
+```
 
 ```julia
 julia> readdir()
@@ -65,26 +83,30 @@ ImageStack{ColorTypes.RGB{FixedPointNumbers.Normed{UInt8,8}}}
   size: 20×20×2
 ```
 """
-function load(::Type{ImageStack}, dir::AbstractString; ignoredots=true)
-    files = readdir(dir)
-    ignoredots && filter!(f -> f[1] != '.', files)
-    load(ImageStack, sort!(joinpath.(dir, files)))
-end
-
-function load(::Type{ImageStack}, dir::AbstractString, ext::AbstractString; ignoredots=true)
-    files = readdir(dir)
-    ignoredots && filter!(f -> f[1] != '.', files)
-    filter!(f -> last(splitext(f)) == ext, files)
-    if isempty(files)
-        error("no files with extension \"$ext\" found in \"$dir\"")
+function load(::Type{ImageStack}, path::AbstractString; ext::Union{Nothing,AbstractString}=nothing,
+              ignoredots=true)
+    if isdir(path)
+        files = readdir(path)
+        ignoredots && filter!(f -> f[1] != '.', files)
+        !isnothing(ext) && filter!(f -> last(splitext(f)) == ext, files)
+        if isempty(files)
+            error("no files$(isnothing(ext) ? " " : "with extension \"$ext\" ")found in \"$path\"")
+        end
+        load(ImageStack, sort!(joinpath.(path, files)))
+    elseif isfile(path)
+        if lowercase(replace(last(splitext(path)), "." => "")) ∉ VIDEO_EXTS
+            error("file extension is not a supported video extension, see CaimCore.VIDEO_EXTS")
+        end
+        ImageStack(loadvideo(path))
+    else
+        error("path is neither a directory nor a file")
     end
-    load(ImageStack, sort!(joinpath.(dir, files)))
 end
 
 """
     load(::Type{ImageStack}, files)
 
-Load files into an image stack in the order they are provided.
+Load image files into an image stack in the order they are provided.
 
 The files must all have the same size, file extention and color space, e.g.
 `RGB{N0f8}`, `Gray{N0f8}`, etc..
@@ -105,7 +127,7 @@ function load(::Type{ImageStack}, files::AbstractVector{<:AbstractString})
         error("files must all have the same extension; got ", exts)
     end
 
-    frames = loadframes(files)
+    frames = loadstack(files)
     if anydifferent(typeof.(frames))
         error("files must all have the same color space")
     end
@@ -121,7 +143,7 @@ function load(::Type{ImageStack}, files::AbstractVector{<:AbstractString})
     end
 end
 
-function loadframes(files::AbstractVector{<:AbstractString})
+function loadstack(files::AbstractVector{<:AbstractString})
     try
         FileIO.load.(files)
     catch e
@@ -131,6 +153,20 @@ function loadframes(files::AbstractVector{<:AbstractString})
             rethrow(e)
         end
     end
+end
+
+function loadvideo(path::AbstractString)
+    video = try
+        VideoIO.openvideo(path)
+    catch
+        error("file does not appear to be a properly formatted video")
+    end
+    @defer close(video)
+    frames = [Array(read(video))]
+    while !eof(video)
+        push!(frames, Array(read(video)))
+    end
+    frames
 end
 
 Base.:(==)(a::ImageStack, b::ImageStack) = frames(a) == frames(b)
