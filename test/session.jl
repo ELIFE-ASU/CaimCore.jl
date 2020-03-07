@@ -34,7 +34,7 @@
             end
         end
 
-        let path = joinpath(@__DIR__, "dataset", "data", "tiff")
+        let path = joinpath(STACKS_DIR, "tiff")
             stack = load(ImageStack, path)
 
             s = Session()
@@ -43,7 +43,7 @@
             @test s.datasets == [stack]
         end
 
-        let path = joinpath(@__DIR__, "dataset", "data", "tiff")
+        let path = joinpath(STACKS_DIR, "tiff")
             stack = load(ImageStack, path)
 
             s = Session()
@@ -53,7 +53,7 @@
         end
 
         let path = joinpath(SESSION_DIR, tempname())
-            datapath = joinpath(@__DIR__, "dataset", "data", "tiff")
+            datapath = joinpath(STACKS_DIR, "tiff")
             stack = load(ImageStack, datapath)
 
             s = Session()
