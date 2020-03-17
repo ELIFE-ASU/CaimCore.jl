@@ -35,7 +35,7 @@
         end
 
         let path = joinpath(STACKS_DIR, "tiff")
-            stack = load(ImageStack, path)
+            stack = load(ImageStack.Frames, path)
 
             s = Session()
             t = dataset!(s, stack)
@@ -44,20 +44,20 @@
         end
 
         let path = joinpath(STACKS_DIR, "tiff")
-            stack = load(ImageStack, path)
+            stack = load(ImageStack.Frames, path)
 
             s = Session()
-            t = dataset!(s, ImageStack, path)
+            t = dataset!(s, ImageStack.Frames, path)
             @test s === t
             @test s.datasets == [stack]
         end
 
         let path = joinpath(SESSION_DIR, tempname())
             datapath = joinpath(STACKS_DIR, "tiff")
-            stack = load(ImageStack, datapath)
+            stack = load(ImageStack.Frames, datapath)
 
             s = Session()
-            dataset!(s, ImageStack, datapath)
+            dataset!(s, ImageStack.Frames, datapath)
             save(path, s)
 
             try

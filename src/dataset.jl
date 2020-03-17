@@ -11,5 +11,3 @@ abstract type Dataset end
 A supertype for all videographic datasets
 """
 abstract type VideoGraphicDataset <: Dataset end
-
-include("dataset/imagestack.jl")

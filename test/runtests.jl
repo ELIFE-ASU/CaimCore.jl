@@ -1,4 +1,4 @@
 using Test, CaimCore
 
-include("dataset/imagestack.jl")
+include("imagestack/dataset.jl")
 include("session.jl")

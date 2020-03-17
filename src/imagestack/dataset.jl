@@ -1,3 +1,7 @@
+import ..VideoGraphicDataset
+import ..anydifferent
+import ..load
+
 """
     VIDEO_EXTS
 
@@ -10,36 +14,36 @@ const VIDEO_EXTS = begin
 end
 
 """
-    ImageStack <: VideoGraphicDataset
-    ImageStack(frames::Array{C,3}) where {C <: Colorant}
-    ImageStack(frames::AbstractVector{Matrix{C}} where {C <: Colorant}
+    Frames <: VideoGraphicDataset
+    Frames(frames::Array{C,3}) where {C <: Colorant}
+    Frames(frames::AbstractVector{Matrix{C}} where {C <: Colorant}
 
 An image stack consists of a collection of 2-D images, running in time.
 """
-mutable struct ImageStack{C <: Colorant} <: VideoGraphicDataset
+mutable struct Frames{C <: Colorant} <: VideoGraphicDataset
     frames::Array{C,3}
 end
 
-function ImageStack(frames::AbstractVector{Matrix{C}}) where {C <: Colorant}
+function Frames(frames::AbstractVector{Matrix{C}}) where {C <: Colorant}
     if anydifferent(size.(frames))
         error("frames must all have the same dimension")
     end
-    ImageStack{C}(cat(frames...; dims=3))
+    Frames{C}(cat(frames...; dims=3))
 end
 
-function Base.show(io::IO, stack::ImageStack)
+function Base.show(io::IO, stack::Frames)
     println(io, typeof(stack))
     print(io, "  size: ", join(string.(size(stack)), "×"))
 end
 
-frames(stack::ImageStack) = stack.frames
-Base.size(stack::ImageStack) = size(frames(stack))
+frames(stack::Frames) = stack.frames
+Base.size(stack::Frames) = size(frames(stack))
 
 """
-    load(::Type{ImageStack}, path; ext=nothing, ignoredots=true)
+    load(::Type{Frames}, path; ext=nothing, ignoredots=true)
 
 Load all frames from a video or image files from a directory into an
-`ImageStack`.  If a directory is provided, only files with extention `ext` will
+`Frames`.  If a directory is provided, only files with extention `ext` will
 be loaded. If `isnothing(ext)`, all files will be load. Files whose name begins
 with a `.` will be ignored if `ignoredots` is `true`.
 
@@ -48,8 +52,8 @@ files must all have the same size, file extention and color space, e.g.
 `RGB{N0f8}`, `Gray{N0f8}`, etc..
 
 ```julia
-julia> load(ImageStack, "fromtiffs.avi")
-ImageStack{ColorTypes.RGB{FixedPointNumbers.Normed{UInt8,8}}}
+julia> load(Frames, "fromtiffs.avi")
+Frames{ColorTypes.RGB{FixedPointNumbers.Normed{UInt8,8}}}
   size: 20×20×5
 ```
 
@@ -63,27 +67,27 @@ julia> readdir()
  "000004.tiff"
  "000005.tiff"
 
-julia> load(ImageStack, ".")
-ImageStack{ColorTypes.RGB{FixedPointNumbers.Normed{UInt8,8}}}
+julia> load(Frames, ".")
+Frames{ColorTypes.RGB{FixedPointNumbers.Normed{UInt8,8}}}
   size: 20×20×5
 
-julia> load(ImageStack, "."; ignoredots=false)
+julia> load(Frames, "."; ignoredots=false)
 ERROR: files must all have the same extension; got ["", ".tiff"]
 [...]
 ```
 
 You can filter files by extension.
 ```julia
-julia> load(ImageStack, ".")
+julia> load(Frames, ".")
 ERROR: files must all have the same extension; got [".png", ".tiff"]
 [...]
 
-julia> load(ImageStack, ".", ".tiff")
-ImageStack{ColorTypes.RGB{FixedPointNumbers.Normed{UInt8,8}}}
+julia> load(Frames, ".", ".tiff")
+Frames{ColorTypes.RGB{FixedPointNumbers.Normed{UInt8,8}}}
   size: 20×20×2
 ```
 """
-function load(::Type{ImageStack}, path::AbstractString; ext::Union{Nothing,AbstractString}=nothing,
+function load(::Type{Frames}, path::AbstractString; ext::Union{Nothing,AbstractString}=nothing,
               ignoredots=true)
     if isdir(path)
         files = readdir(path)
@@ -92,19 +96,19 @@ function load(::Type{ImageStack}, path::AbstractString; ext::Union{Nothing,Abstr
         if isempty(files)
             error("no files$(isnothing(ext) ? " " : "with extension \"$ext\" ")found in \"$path\"")
         end
-        load(ImageStack, sort!(joinpath.(path, files)))
+        load(Frames, sort!(joinpath.(path, files)))
     elseif isfile(path)
         if lowercase(replace(last(splitext(path)), "." => "")) ∉ VIDEO_EXTS
             error("file extension is not a supported video extension, see CaimCore.VIDEO_EXTS")
         end
-        ImageStack(loadvideo(path))
+        Frames(loadvideo(path))
     else
         error("path is neither a directory nor a file")
     end
 end
 
 """
-    load(::Type{ImageStack}, files)
+    load(::Type{Frames}, files)
 
 Load image files into an image stack in the order they are provided.
 
@@ -112,12 +116,12 @@ The files must all have the same size, file extention and color space, e.g.
 `RGB{N0f8}`, `Gray{N0f8}`, etc..
 
 ```julia
-julia> load(ImageStack, ["000001.tiff", "000002.tiff"])
-ImageStack{ColorTypes.RGB{FixedPointNumbers.Normed{UInt8,8}}}
+julia> load(Frames, ["000001.tiff", "000002.tiff"])
+Frames{ColorTypes.RGB{FixedPointNumbers.Normed{UInt8,8}}}
   size: 20×20×2
 ```
 """
-function load(::Type{ImageStack}, files::AbstractVector{<:AbstractString})
+function load(::Type{Frames}, files::AbstractVector{<:AbstractString})
     if isempty(files)
         error("no files provided")
     end
@@ -133,7 +137,7 @@ function load(::Type{ImageStack}, files::AbstractVector{<:AbstractString})
     end
 
     try
-        ImageStack(frames)
+        Frames(frames)
     catch e
         if isa(e, MethodError)
             error("files must all be images")
@@ -169,4 +173,4 @@ function loadvideo(path::AbstractString)
     frames
 end
 
-Base.:(==)(a::ImageStack, b::ImageStack) = frames(a) == frames(b)
+Base.:(==)(a::Frames, b::Frames) = frames(a) == frames(b)
