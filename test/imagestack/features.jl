@@ -38,6 +38,20 @@ using CaimCore.ImageStack
                                [-1, 2], [0, 2],
                                [-1, 3], [0, 3]])
     end
+
+    let box = Box([-1, -1], [3, 3])
+        @test [-1,-1] in box
+        @test [ 0,-1] in box
+        @test [ 3,-1] in box
+        @test [-1, 0] in box
+        @test [-1, 3] in box
+        @test [ 1, 1] in box
+
+        @test !([-2, 0] in box)
+        @test !([ 4, 0] in box)
+        @test !([ 0,-2] in box)
+        @test !([ 0, 4] in box)
+    end
 end
 
 @testset "Circle" begin
@@ -90,5 +104,18 @@ end
         @test Set(circle) == Set([[ 1, 0],
                                   [ 0, 1], [ 1, 1], [ 2, 1],
                                   [ 1, 2]])
+    end
+
+    let circle = Circle([ 0, 0], 1)
+        @test [ 0,-1] in circle
+        @test [-1, 0] in circle
+        @test [ 0, 0] in circle
+        @test [ 1, 0] in circle
+        @test [ 0, 1] in circle
+
+        @test !([-1,-1] in circle)
+        @test !([ 1,-1] in circle)
+        @test !([-1, 1] in circle)
+        @test !([ 1, 1] in circle)
     end
 end

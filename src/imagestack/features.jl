@@ -35,7 +35,7 @@ macro ensure2d(ps...)
     end...)
 end
 
-struct Box{P <: Point}
+struct Box{P <: Point} <: Feature
     tl::P
     br::P
     function Box(a::P, b::P) where {P <: Point}
@@ -62,6 +62,9 @@ Base.eltype(b::Box{P}) where P = P
 
 Base.:(==)(b::Box{P}, c::Box{P}) where P = b.tl == c.tl && b.br == c.br
 Base.:(==)(b::Box{P}, c::Box{Q}) where {P, Q} = false
+
+Base.in(p::P, b::Box{P}) where {P <: Point} = all(b.tl .<= p .<= b.br)
+Base.in(p, b::Box) = false
 
 struct Circle{P <: Point} <: Feature
     center::P
