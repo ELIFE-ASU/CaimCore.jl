@@ -99,3 +99,59 @@ function Base.in(p::P, c::Circle{P}) where {P <: Point}
 end
 Base.in(p, c::Circle) = false
 Base.IteratorSize(::Circle) = Base.SizeUnknown()
+
+struct FreeForm{P <: Point} <: Feature
+    boundary::Vector{P}
+    function FreeForm(b::Vector{P}) where {P <: Point}
+        if isempty(b)
+            throw(ArgumentError("boundary must be non-empty"))
+        end
+        for p in b
+            @ensure2d p
+        end
+        new{P}(b)
+    end
+end
+
+function box(f::FreeForm)
+    tl = f.boundary[1]
+    br = f.boundary[1]
+    for p in f.boundary
+        tl = min.(tl, p)
+        br = max.(br, p)
+    end
+    Box(tl, br)
+end
+
+function Base.in(p::P, f::FreeForm{P}) where {P <: Point}
+    if length(p) != 2
+        false
+    else
+        windingnumber = 0
+        len = length(f.boundary)
+        for i in 1:len
+            r, s = f.boundary[i], f.boundary[(i + 1 <= len) ? i + 1 : 1]
+            isleft = (s[1] - r[1]) * (p[2] - r[2])  - (p[1] -  r[1]) * (s[2] - r[2])
+
+            if all(((r .<= p) .& (p .<= s)) .| ((s .<= p) .& (p .<= r)))
+                if isleft == 0
+                    windingnumber = 1
+                    break
+                end
+            end
+
+            if r[2] <= p[2]
+                if s[2] > p[2] && isleft > 0
+                    windingnumber += 1
+                else
+                end
+            elseif s[2] <= p[2] && isleft < 0
+                windingnumber -= 1
+            end
+        end
+
+        windingnumber != 0
+    end
+end
+Base.in(p, f::FreeForm) = false
+Base.IteratorSize(::FreeForm) = Base.SizeUnknown()

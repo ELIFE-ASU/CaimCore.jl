@@ -3,7 +3,7 @@ module ImageStack
 using Defer, FileIO, Images, LinearAlgebra, VideoIO
 
 export Frames, frames, load
-export Point, Box, Circle
+export Point, Box, Circle, FreeForm
 export width, height, area, box
 
 include("imagestack/dataset.jl")

@@ -119,3 +119,75 @@ end
         @test !([ 1, 1] in circle)
     end
 end
+
+@testset "FreeForm" begin
+    @test_throws ArgumentError FreeForm(Point[])
+    @test_throws ArgumentError FreeForm([[0, 1, 2]])
+    @test_throws ArgumentError FreeForm([[0, 1], [1, 2, 3]])
+
+    let ff = FreeForm([[ 0, 0], [ 1, 0], [ 1, 1], [ 0, 1]])
+        @test ff.boundary == [[ 0, 0], [ 1, 0], [ 1, 1], [ 0, 1]]
+        @test box(ff) == Box([ 0, 0], [ 1, 1])
+        @test Set(ff) == Set(box(ff))
+    end
+
+    let ff = FreeForm([[ 0, 0], [ 2, 0], [ 2, 2], [ 0, 2]])
+        @test ff.boundary == [[ 0, 0], [ 2, 0], [ 2, 2], [ 0, 2]]
+        @test box(ff) == Box([ 0, 0], [ 2, 2])
+        @test Set(ff) == Set(box(ff))
+    end
+
+    let ff = FreeForm([[ 0, 0], [ 4, 0], [ 0, 4], [ 4, 4]])
+        @test ff.boundary == [[ 0, 0], [ 4, 0], [ 0, 4], [ 4, 4]]
+        @test box(ff) == Box([ 0, 0], [ 4, 4])
+        @test Set(ff) == Set([[ 0, 0], [ 1, 0], [ 2, 0], [ 3, 0], [ 4, 0],
+                              [ 1, 1], [ 2, 1], [ 3, 1],
+                              [ 2, 2],
+                              [ 1, 3], [ 2, 3], [ 3, 3],
+                              [ 0, 4], [ 1, 4], [ 2, 4], [ 3, 4], [ 4, 4]])
+    end
+
+    let ff = FreeForm([[ 0, 0], [ 0, 4], [ 4, 0], [ 4, 4]])
+        @test ff.boundary == [[ 0, 0], [ 0, 4], [ 4, 0], [ 4, 4]]
+        @test box(ff) == Box([ 0, 0], [ 4, 4])
+        @test Set(ff) == Set([[ 0, 0], [ 0, 1], [ 0, 2], [ 0, 3], [ 0, 4],
+                              [ 1, 1], [ 1, 2], [ 1, 3],
+                              [ 2, 2],
+                              [ 3, 1], [ 3, 2], [ 3, 3],
+                              [ 4, 0], [ 4, 1], [ 4, 2], [ 4, 3], [4, 4]])
+    end
+
+    let ff = FreeForm([[ 0, 0], [ 2, 0], [ 2, 2], [ 0, 2]])
+        @testset for p in ff.boundary
+            @test p in ff
+        end
+
+        @testset for p in [[ 0, 1], [ 1, 0], [ 2, 1], [ 1, 2]]
+            @test p in ff
+        end
+
+        @test !([-1, 0] in ff)
+        @test !([ 0,-1] in ff)
+        @test !([ 3, 3] in ff)
+    end
+
+    let ff = FreeForm([[ 0, 0], [ 4, 0], [ 0, 4], [ 4, 4]])
+        @testset for p in ff.boundary
+            @test p in ff
+        end
+
+        @test [ 1, 0] in ff
+        @test [ 2, 0] in ff
+        @test [ 3, 0] in ff
+        @test [ 1, 1] in ff
+        @test [ 2, 1] in ff
+        @test [ 3, 1] in ff
+        @test [ 2, 2] in ff
+        @test [ 1, 3] in ff
+        @test [ 2, 3] in ff
+        @test [ 3, 3] in ff
+        @test [ 1, 4] in ff
+        @test [ 2, 4] in ff
+        @test [ 3, 4] in ff
+    end
+end
