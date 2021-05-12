@@ -27,6 +27,24 @@ function Base.iterate(f::Feature, (b, state))
     nothing
 end
 
+function CaimCore.series(d::VideoGraphicDataset{C}, f::Feature;
+						 Acc::Type{A}=SqrtColorAccumulator{C},
+						 kwargs...) where {C, D, A <: ColorAccumulator{C,D}}
+    width, height, duration = size(d)
+    series = Array{D}(undef, duration)
+    acc = Acc()
+    for t in 1:duration
+        for p in f
+            if all([1,1] .<= p .<= [width,height])
+            	add!(acc, d.frames[p[1], p[2], t])
+            end
+        end
+        series[t] = color(acc)
+        reset!(acc)
+    end
+    series
+end
+
 const Point = AbstractVector{<:Integer}
 
 macro ensure2d(ps...)

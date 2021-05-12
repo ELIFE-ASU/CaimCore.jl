@@ -14,13 +14,13 @@ const VIDEO_EXTS = begin
 end
 
 """
-    Frames <: VideoGraphicDataset
+    Frames <: VideoGraphicDataset{C}
     Frames(frames::Array{C,3}) where {C <: Colorant}
     Frames(frames::AbstractVector{Matrix{C}} where {C <: Colorant}
 
 An image stack consists of a collection of 2-D images, running in time.
 """
-mutable struct Frames{C <: Colorant} <: VideoGraphicDataset
+mutable struct Frames{C <: Colorant} <: VideoGraphicDataset{C}
     frames::Array{C,3}
 end
 

@@ -7,6 +7,7 @@ export Point, Box, Circle, FreeForm
 export width, height, area, box
 
 include("imagestack/dataset.jl")
+include("imagestack/accumulator.jl")
 include("imagestack/features.jl")
 
 end
